@@ -1,3 +1,7 @@
+# Keys for localhost
+server.key
+server.crt
+
 # Logs
 logs
 *.log
