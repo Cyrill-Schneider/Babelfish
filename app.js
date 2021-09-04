@@ -16,14 +16,15 @@ if (os.hostname() === 'localhost' || os.hostname() === '127.0.0.1' || os.hostnam
 	APPENV='PROD';
 }
 
-const FAKETRANSLATION = (process.env.FAKE_TRANSLATION=="TRUE") ? true : false; // Use this to fake translations and avoid costs
+const FAKETRANSLATION = (process.env.FAKE_TRANSLATION=="TRUE") ? true : false; // Use this to fake translations and avoid DeepL costs
 
 const path = require('path');
 
 const PORT = process.env.PORT || 1337;
 
-const PUBLICVAPIDKEY = process.env.PUBLIC_VAPID_KEY;
-const PRIVATEVAPIDKEY = process.env.PRIVATE_VAPID_KEY;
+// VAPID: Webpush only
+// const PUBLICVAPIDKEY = process.env.PUBLIC_VAPID_KEY;
+// const PRIVATEVAPIDKEY = process.env.PRIVATE_VAPID_KEY;
 const VERSION = process.env.VERSION;
 const GOOGLESTREAMINITIALTIMEOUT = process.env.GOOGLE_STREAM_INITIAL_TIMEOUT; // Time to wait before we close the recognition stream
 const GOOGLESTREAMNODATATIMEOUT = process.env.GOOGLE_STREAM_NO_DATA_TIMEOUT; // Time to wait before we close a stream that has received data
@@ -33,9 +34,9 @@ const JWTPRIVATEKEYTHEO = process.env.JWT_PRIVATE_KEY_THEO;
 const GOOGLEPROJECTIDHERMILIO = process.env.GOOGLE_PROJECT_ID_HERMILIO // Google project id for Hermilio
 const JWTCLIENTEMAILHERMILIO = process.env.JWT_CLIENT_EMAIL_HERMILIO;
 const JWTPRIVATEKEYHERMILIO = process.env.JWT_PRIVATE_KEY_HERMILIO;
-const GOOGLEPROJECTIDTHEOLEO = process.env.GOOGLE_PROJECT_ID_THEOLEO // Google project id for TheoLeo
-const JWTCLIENTEMAILTHEOLEO = process.env.JWT_CLIENT_EMAIL_THEOLEO;
-const JWTPRIVATEKEYTHEOLEO = process.env.JWT_PRIVATE_KEY_THEOLEO;
+const GOOGLEPROJECTIDBABELFISH = process.env.GOOGLE_PROJECT_ID_BABELFISH // Google project id for BABELFISH
+const JWTCLIENTEMAILBABELFISH = process.env.JWT_CLIENT_EMAIL_BABELFISH;
+const JWTPRIVATEKEYBABELFISH = process.env.JWT_PRIVATE_KEY_BABELFISH.replace(/\\n/g, '\n'); // https://stackoverflow.com/questions/50299329/node-js-firebase-service-account-private-key-wont-parse
 const GOOGLEMINRESULTCONFIDENCE = process.env.GOOGLE_MIN_RESULT_CONFIDENCE/100;
 const DEEPLRESTURL = process.env.DEEPL_REST_URL;
 const DEEPLACCESSKEY = process.env.DEEPL_ACCESS_KEY;
@@ -98,8 +99,8 @@ httpServer.on('error', err =>{
 });
 
 // ======= WEBPUSH =======
-const webpush = require('web-push');
-webpush.setVapidDetails('mailto:cyrill.schneider@app.ch', PUBLICVAPIDKEY, PRIVATEVAPIDKEY);
+// const webpush = require('web-push');
+// webpush.setVapidDetails('mailto:cyrill.schneider@app.ch', PUBLICVAPIDKEY, PRIVATEVAPIDKEY);
 
 // ======= EXPRESS SERVER =======
 // Body parser for POST requests
@@ -137,7 +138,7 @@ app.get('/status', (req,res) => {
 	// Simple status page to show connections
 	console.log ('(app.js) GET Status');
 	let html='<HTML><HEAD><TITLE>Node.js Status Page</TITLE></HEAD><BODY>';
-	html += `<H2>Socket.io Sessions: ${Object.keys(socketClients).length}</H2>`;
+	html += `<H2>Socket.io Sessions (Clients): ${Object.keys(socketClients).length}</H2>`;
 	
 	for (var key in socketClients) {
 		// skip loop if the property is from prototype
@@ -145,7 +146,7 @@ app.get('/status', (req,res) => {
 		html += `- [active: ${socketClients[key].active}] socketClient {${key}} for ${socketClients[key].agent} created ${secondsBetweenDates(Date.now(),socketClients[key].created)} seconds ago with sampleRate of ${socketClients[key].sampleRateHertz} Hz<BR>`;
 	}
 
-	html += `<H2>DialogFlow Sessions: ${Object.keys(googleClients).length}</H2>`;
+	html += `<H2>Google Cloud Plattform Sessions: ${Object.keys(googleClients).length}</H2>`;
 
 	for (var key in googleClients) {
 		// skip loop if the property is from prototype
@@ -263,7 +264,7 @@ io.on('connection', client => {
 	io.to(client.id).emit ('message', `Client Connected to server with ID=${client.id}`);
 
     client.on('googleAgent', data => {
-		// Client sent the DailogFlow agent to use ("THEO" or "HERMILIO") or Google Cloud STT ("THEOLEO")
+		// Client sent the DailogFlow agent to use ("THEO" or "HERMILIO") or Google Cloud STT ("BABELFISH")
 		socketClients[client.id].agent=data;
 		console.log(`(app.js) (${client.id}) Agent is: ${socketClients[client.id].agent}`);
     });
@@ -326,7 +327,7 @@ io.on('connection', client => {
 					}
 				}
 			}
-		} else if (socketClients[client.id].agent=="THEOLEO") {
+		} else if (socketClients[client.id].agent=="BABELFISH") {
 			if (googleClients[client.id] && googleClients[client.id].detectStream !== null && !googleClients[client.id].detectStreamIsFinal) {
 				// Stream available, forward audio data from client
 				googleClients[client.id].detectStream.write(data);
@@ -411,7 +412,7 @@ const googlespeech = require('@google-cloud/speech');
 // Create empty object for googleClients
 var googleClients = {};
 
-// Create recognition result for Google speech to text (THEOLEO)
+// Create recognition result for Google speech to text (BABELFISH)
 var recognitionResult;
 
 function startRecognitionStream(client, clientId, data) {
@@ -477,7 +478,7 @@ function startRecognitionStream(client, clientId, data) {
 				'Website'
 			]
 		}
-	} else if (socketClients[clientId].agent=="THEOLEO") {
+	} else if (socketClients[clientId].agent=="BABELFISH") {
 		encoding="LINEAR16";
 		/*audioConfig	= {
 			config: {
@@ -526,11 +527,11 @@ function startRecognitionStream(client, clientId, data) {
 			client_email: JWTCLIENTEMAILHERMILIO,
 			private_key: JWTPRIVATEKEYHERMILIO
 		};
-	} else if (socketClients[clientId].agent=="THEOLEO")	{
-		projectId = GOOGLEPROJECTIDTHEOLEO;
+	} else if (socketClients[clientId].agent=="BABELFISH")	{
+		projectId = GOOGLEPROJECTIDBABELFISH;
 		credentials = {
-			client_email: JWTCLIENTEMAILTHEOLEO,
-			private_key: JWTPRIVATEKEYTHEOLEO
+			client_email: JWTCLIENTEMAILBABELFISH,
+			private_key: JWTPRIVATEKEYBABELFISH
 		};
 	} else {
 		console.error (`(app.js) (${clientId}) Unknown agent type: ${socketClients[clientId].agent}`)
@@ -543,7 +544,7 @@ function startRecognitionStream(client, clientId, data) {
 			credentials
 		});
 	googleClients[clientId].sessionPath = googleClients[clientId].sessionsClient.sessionPath(projectId, clientId);
-	} else if (socketClients[clientId].agent=="THEOLEO") {
+	} else if (socketClients[clientId].agent=="BABELFISH") {
 		console.log (`(app.js) (${clientId}) Creating Google SpeechClient: ${socketClients[clientId].agent}`)
 		googleClients[clientId].sessionsClient = new googlespeech.SpeechClient({
 			projectId, 
@@ -621,15 +622,15 @@ function startRecognitionStream(client, clientId, data) {
 				}
 			}
 			});
-	} else if (socketClients[clientId].agent=="THEOLEO") {
-		// Google speech to text with DeepL translation for Theo-Leo
+	} else if (socketClients[clientId].agent=="BABELFISH") {
+		// Google speech to text with DeepL translation for Babelfish
 		console.log (`(app.js) (${clientId}) audioConfig ${JSON.stringify(audioConfig)}`);
 		console.log (`(app.js) (${clientId}) Starting detectStream: ${socketClients[clientId].agent}`)
 		googleClients[clientId].detectStream = googleClients[clientId].sessionsClient
 		.streamingRecognize(audioConfig)
 		.on('error', console.error)
 		.on('data', data => {
-			// console.log ('(app.js) interim message: ' + JSON.stringify(data));
+			console.log ('(app.js) interim message: ' + JSON.stringify(data));
 			// StreamingDetectIntentResponse: DialogFlow sends several messages back
 			// 1. If the input was set to streaming audio (=yes), the first one or more messages contain recognition_result. Each recognition_result represents a more complete transcript of what the user said. The last recognition_result has is_final set to true.
 			// 2. The next message contains response_id, query_result and optionally webhook_status if a WebHook was called (=no).
