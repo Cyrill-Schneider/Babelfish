@@ -630,7 +630,7 @@ function startRecognitionStream(client, clientId, data) {
 		.streamingRecognize(audioConfig)
 		.on('error', console.error)
 		.on('data', data => {
-			console.log ('(app.js) interim message: ' + JSON.stringify(data));
+			// console.log ('(app.js) interim message: ' + JSON.stringify(data));
 			// StreamingDetectIntentResponse: DialogFlow sends several messages back
 			// 1. If the input was set to streaming audio (=yes), the first one or more messages contain recognition_result. Each recognition_result represents a more complete transcript of what the user said. The last recognition_result has is_final set to true.
 			// 2. The next message contains response_id, query_result and optionally webhook_status if a WebHook was called (=no).
