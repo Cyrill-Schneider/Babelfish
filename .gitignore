@@ -1,5 +1,4 @@
 # Batch command files
-setenv.bat
 gettoken.bat
 
 # Firebase web server files
