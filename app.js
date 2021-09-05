@@ -42,9 +42,9 @@ const DEEPLRESTURL = process.env.DEEPL_REST_URL;
 const DEEPLACCESSKEY = process.env.DEEPL_ACCESS_KEY;
 
 // Files to serve
-const INDEX = path.join(__dirname, '/public/index.html');
-const PUSHFORM = path.join(__dirname, '/public/pushform.html');
-const FAVICON = path.join(__dirname, '/public/favicon.ico');
+const INDEX = path.join(__dirname, '/nodeweb/index.html');
+const PUSHFORM = path.join(__dirname, '/nodeweb/pushform.html');
+const FAVICON = path.join(__dirname, '/nodeweb/favicon.ico');
 
 // Allowed origins for CORS
 const ALLOWEDORIGINS = process.env.ALLOWED_ORIGINS.split(' ');
