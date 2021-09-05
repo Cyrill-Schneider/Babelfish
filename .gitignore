@@ -2,6 +2,10 @@
 setenv.bat
 gettoken.bat
 
+# Firebase web server files
+.firebaserc
+firebase.json
+
 # Backup files
 *.bak
 
