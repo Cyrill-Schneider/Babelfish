@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<HTML lang="de">
+	<HEAD>
+		<META charset="UTF-8">
+		<TITLE>Babelfish Client V0.0.2</TITLE>
+		<link rel="icon" href="/images/lab.ico">
+		<link rel="shortcut icon" href="/images/lab.ico">
+		<link rel="stylesheet" href="/css/main.css">
+</HEAD>
+<BODY onload="pageLoaded()">
+
+	<!-- Socket (socket.io.js) -->
+	<script src="js/socket.io.js"></script>
+
+	<!-- Screen layout -->
+	<div id="divContainer" class="container">
+		<!-- Logo -->
+		<div id="divLogo" class="app-logo"> <IMG id="appLogo" class="width-100" alt="APP logo" src="images/app_Logo_mark_png.png"></div>
+		<!-- Start button -->
+		<div id="divPlay" class="play-button" onclick="playBtnClick()"><IMG id="imagePlay" class="width-100" alt="play button" src="images/mic.png"></div>
+		<!-- DE text element -->
+		<div id="divDE" class="de-text" alt="Text auf Deutsch"></div>
+		<!-- FR text element -->
+		<div id="divFR" class="fr-text" alt="Texte en français"></div>
+		<!-- TermsOfUse element to access terms of use -->
+		<div id="divTermsOfUse" class="tou-text" alt="terms of use" onclick="termsOfUse()"></div>
+		<!-- Text element for error messages-->
+		<div id="divError" class="error-text" alt="error messages"></div>
+	</div>
+
+	<!-- Client functions (client.js) -->
+	<script src="js/babelfish.js?version=2"></script>
+</BODY>
+</HTML>
