@@ -11,12 +11,12 @@ if (location.hostname === "localhost" || location.hostname === "127.0.0.1") {
 	currentENV='DEV';
 	// Development environment on localhost 
 	nodeURL='https://localhost:1337';
-} else if (location.hostname === "theo-staging.web.app" || location.hostname === "theoleo-staging.web.app"){
+} else if (location.hostname === "theo-staging.web.app" || location.hostname === "theoleo-staging.web.app" || location.hostname === "cyrill-schneider.github.io"){
 	currentENV='STAGE';
 	// Connect to node.js on Heroku STAGING
 	(googleAgent!=="BABELFISH") ?	nodeURL='https://theo-staging.herokuapp.com' : nodeURL='https://babelfish-stage.herokuapp.com';
 } else {
-	// FIXME 4 BABELFISH
+	// FIXME 4 BABELFISH (currently for THEO only)
 	currentENV='PROD';
 	// Assuming production, connect to node.js on Heroku PRODUCTION
 	nodeURL='https://theo-production.herokuapp.com';
