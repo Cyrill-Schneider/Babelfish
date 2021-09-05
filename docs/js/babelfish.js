@@ -16,7 +16,7 @@ if (location.hostname === "localhost" || location.hostname === "127.0.0.1") {
 	// Connect to node.js on Heroku STAGING
 	(googleAgent!=="BABELFISH") ?	nodeURL='https://theo-staging.herokuapp.com' : nodeURL='https://babelfish-stage.herokuapp.com';
 } else {
-	// FIXME 4 BABELFISH (currently for THEO only)
+	// FIXME 4 BABELFISH (there is a production environment for THEO only atm)
 	currentENV='PROD';
 	// Assuming production, connect to node.js on Heroku PRODUCTION
 	nodeURL='https://theo-production.herokuapp.com';
