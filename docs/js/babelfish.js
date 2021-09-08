@@ -100,17 +100,17 @@ function showText (outputText, divElement, languageString) {
 }
 
 function outputDE (newText) {
-	console.log ("(app.js) DE: " + newText);
+	console.log ("(client.js) DE: " + newText);
 	showText (newText, document.getElementById('divDE'), 'de');
 }
 
 function outputFR (newText) {
-	console.log ("(app.js) FR: " +newText.translations[0].text);
+	console.log ("(client.js) FR: " +newText.translations[0].text);
 	showText (newText.translations[0].text, document.getElementById('divFR'), 'fr');
 }
 
 function saveFinishedPhrases () {
-	console.log ('(app.js) Saving finished phrases');
+	console.log ('(client.js) Saving finished phrases');
 	// Call output functions to make all words unchanged
 	showText (currentTextDE, document.getElementById('divDE'), 'de');
 	showText (currentTextFR, document.getElementById('divFR'), 'fr');
@@ -133,7 +133,7 @@ function termsOfUse()
 	document.getElementById("divTermsOfUse").style.display = "none";
 }
 
-//====== SOCKET TO NODE SERVER (app.js) ======
+//====== SOCKET TO NODE SERVER (client.js) ======
 
 const socket = io.connect (nodeURL, {
   transports: ['websocket']
@@ -254,7 +254,7 @@ var handleMediaStream = function (stream) {
 
 	audioContext = createAudioContext();
 
-	// Send actual sample rate in Hz for this client to backend (app.js)
+	// Send actual sample rate in Hz for this client to backend (client.js)
 	console.log(`(client.js) Sending AudioContext sample rate to backend: ${audioContext.sampleRate} Hz`);
 	socket.emit('setSampleRateHertz', audioContext.sampleRate);
 	showError ("audioContext state is: " + audioContext.state + ", " + audioContext.sampleRate + " Hz");
@@ -280,7 +280,7 @@ var handleMediaStream = function (stream) {
 	
 		//var receivedAudio = false;
 		processor.onaudioprocess = function (e) {
-			// Send binary data to app.js
+			// Send binary data to client.js
 			// This will be called multiple times per second.
 			// The audio data will be in e.inputBuffer
 			var left = e.inputBuffer.getChannelData(0);

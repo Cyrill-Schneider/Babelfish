@@ -5,27 +5,16 @@
 require('dotenv').config();
 var XMLHttpRequest = require("xmlhttprequest").XMLHttpRequest; // for DeepL REST API
 
-const os = require('os');
-console.log (`(app.js) Hostname: ${os.hostname()}`);
-var APPENV;
-if (os.hostname() === 'localhost' || os.hostname() === '127.0.0.1' || os.hostname() === 'LTW10074') {
-	// Development environment on localhost
-	APPENV='DEV';
-} else {
-	// Environment is Heroku staging or production, we do not distinguish between those two
-	APPENV='PROD';
-}
-
 const FAKETRANSLATION = (process.env.FAKE_TRANSLATION=="TRUE") ? true : false; // Use this to fake translations and avoid DeepL costs
 
 const path = require('path');
 
-const PORT = process.env.PORT || 1337;
-
+// Process .env
 // VAPID: Webpush only
 // const PUBLICVAPIDKEY = process.env.PUBLIC_VAPID_KEY;
 // const PRIVATEVAPIDKEY = process.env.PRIVATE_VAPID_KEY;
 const VERSION = process.env.VERSION;
+const PORT = process.env.PORT || 1337;
 const GOOGLESTREAMINITIALTIMEOUT = process.env.GOOGLE_STREAM_INITIAL_TIMEOUT; // Time to wait before we close the recognition stream
 const GOOGLESTREAMNODATATIMEOUT = process.env.GOOGLE_STREAM_NO_DATA_TIMEOUT; // Time to wait before we close a stream that has received data
 const GOOGLEPROJECTIDTHEO = process.env.GOOGLE_PROJECT_ID_THEO // Google project id for Theo
@@ -40,6 +29,22 @@ const JWTPRIVATEKEYBABELFISH = process.env.JWT_PRIVATE_KEY_BABELFISH.replace(/\\
 const GOOGLEMINRESULTCONFIDENCE = process.env.GOOGLE_MIN_RESULT_CONFIDENCE/100;
 const DEEPLRESTURL = process.env.DEEPL_REST_URL;
 const DEEPLACCESSKEY = process.env.DEEPL_ACCESS_KEY;
+const LOCALHOSTNAMELIST = process.env.LOCALHOST_HOSTNAMES.split(' ');
+
+const os = require('os');
+console.log (`(app.js) Hostname: ${os.hostname()}`);
+var APPENV;
+
+// Check if the current hostname is in the list of development environments
+if (LOCALHOSTNAMELIST.includes(os.hostname())) {
+	// if (os.hostname() === 'localhost' || os.hostname() === '127.0.0.1' || os.hostname() === 'LTW10074') {
+	// We are on a development environment on localhost
+	APPENV='DEV';
+} else {
+	// Current environment is Heroku staging or production (we do not distinguish between these two)
+	APPENV='PROD';
+}
+
 
 // Files to serve
 const INDEX = path.join(__dirname, '/nodeweb/index.html');
