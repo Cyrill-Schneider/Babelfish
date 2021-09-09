@@ -60,33 +60,6 @@ canvas {
 	box-sizing: border-box;
 }
 
-
-.oscilloscope {
-	position: absolute;
-	display: block;
-	background-color: rgba(0,0,0,0);
-	cursor: pointer;
-	z-index: 10000;
-	/*border-style: dotted;
-	border-color: red;
-	border-width: 1px;
-	*/
-	top: 50%;
-	margin:0 3%;
-	width: 94%;
-	height: 10vh;
-	box-sizing: border-box;
-}
-
-.visualizer {
-	/*width: 100%;
-	height: 100%;
-	top: 0px;
-	left: 0px;*/
-	box-sizing: border-box;
-}
-
-
 .de-text {
 	/* -moz-border-radius:10px;  /* for Firefox */
 	/* -webkit-border-radius:10px; /* for Webkit-Browsers */
@@ -119,16 +92,14 @@ canvas {
 
 .de-word-unchanged {
 	display: inline-block;
-	color:rgba(84,176,204,1);
+	color:rgba(156,203,137,1);
 }
 
 .fr-text {
 	/* -moz-border-radius:10px;  /* for Firefox */
 	/* -webkit-border-radius:10px; /* for Webkit-Browsers */
 	border-radius:10px; /* regular */
-	/* background: gray; /* older browsers */
 	background-color: rgba(255, 255, 255, 0.6); /* newer browsers */
-	/* border: solid 10px #000; /* older browsers */
 	z-index: 10000;
 	border-style: solid;
 	border-color: rgba(96,190,176,1);
@@ -153,7 +124,7 @@ canvas {
 
 .fr-word-unchanged {
 	display: inline-block;
-	color:  rgba(96,190,176,1);
+	color:rgba(156,203,137,1);
 }
 
 
