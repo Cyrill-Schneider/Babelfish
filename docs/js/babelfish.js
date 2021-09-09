@@ -71,6 +71,11 @@ var currentTextFR="";
 var finishedPhrasesDE="";
 var finishedPhrasesFR="";
 var finishedPhraseCount=0;
+var languageObject = {
+	sourceLang : "deDE",
+	destLang : "frFR"
+}
+
 
 function showText (outputText, divElement, languageString) {
 	let oldWords = (languageString=="de") ? currentTextDE.split(' ') : currentTextFR.split(' ');
@@ -190,9 +195,25 @@ socket.on('translationFR', translationJSON => {
 	outputFR (JSON.parse(translationJSON));
 });
 
+//============ LANGUAGE INPUT/OUTPUT SWITCH BUTTON ============
+function switchLanguage(){
+	let tempLang=languageObject.sourceLang;
+	languageObject.sourceLang=languageObject.destLang;
+	languageObject.destLang=tempLang;
+	console.log ('(client.js) Languages switched to ' + languageObject.sourceLang + " > " + languageObject.destLang);
+	
+	if (isRecording) { 
+		console.log ('(client.js) Stopping recording state');
+		stopRecState();
+	}
+	console.log ('(client.js) Sending setLanguages to backend: ' + languageObject.sourceLang + ', ' + languageObject.destLang);
+	socket.emit('setLanguage', languageObject);
+	console.log ('(client.js) Starting recording state');
+	setRecState()
+}
+
 //============ PLAY BUTTON (START) ============
 function playBtnClick () {
-	
 	// Show recording icon instead of play button
 	//document.getElementById("divPlay").style.display = "none";
 	document.getElementById("imagePlay").src="images/recording.gif";
@@ -319,6 +340,17 @@ function setRecState() {
 	createMediaStream();
 
 	showError ("Rec state");
+}
+
+function stopRecState() {
+	// Stop recording state, closeMediaStream
+	isRecording = false;
+
+	// This will create an audio context, an audio node chain and start the Google Cloud Stream
+	closeMediaStream();
+	socket.emit('endGoogleCloudStream', '');
+
+	showError ("Media stream closed");
 }
 
 //=============== CLEANUP AND END ================

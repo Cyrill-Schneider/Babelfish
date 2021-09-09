@@ -209,6 +209,49 @@ canvas {
 	display: none;
 }
 
+.lang-switch {
+	border: none;
+	display: block;
+	z-index: 30000;
+	position: absolute;
+	left: 50%;
+	top: 15%;
+	-webkit-transform: translate(-50%, -50%);
+	transform: translate(-50%, -50%);
+	width: 20%;
+	height: 10%;
+	max-width:100%;
+	text-align: center;
+}
+
+.lang-in-icon {
+	border: none;
+	display: block;
+	z-index: 30000;
+	position: absolute;
+	left: 5%;
+	top: 15%;
+	-webkit-transform: translate(-50%, -50%);
+	transform: translate(-50%, -50%);
+	width: 20%;
+	height: 10%;
+	max-width:100%;
+	text-align: center;
+}
+.lang-out-icon {
+	border: none;
+	display: block;
+	z-index: 30000;
+	position: absolute;
+	left: 95%;
+	top: 15%;
+	-webkit-transform: translate(-50%, -50%);
+	transform: translate(-50%, -50%);
+	width: 20%;
+	height: 10%;
+	max-width:100%;
+	text-align: center;
+}
 .width-100 {
 	  /*height: 100%;
 	  width: 100%;*/
