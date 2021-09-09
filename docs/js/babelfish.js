@@ -71,6 +71,13 @@ var currentTextFR="";
 var finishedPhrasesDE="";
 var finishedPhrasesFR="";
 var finishedPhraseCount=0;
+var languageObject = {
+	sourceLang : "de-DE",
+	destLang : "fr-FR",
+	sourceLangIcon : "images/flagDE.png",
+	destLangIcon : "images/flagFR.png",
+}
+
 
 function showText (outputText, divElement, languageString) {
 	let oldWords = (languageString=="de") ? currentTextDE.split(' ') : currentTextFR.split(' ');
@@ -190,15 +197,43 @@ socket.on('translationFR', translationJSON => {
 	outputFR (JSON.parse(translationJSON));
 });
 
+//============ LANGUAGE INPUT/OUTPUT SWITCH BUTTON ============
+function switchLanguage(){
+	if (isRecording) {
+		console.log ('(client.js) Stoping recording');
+		document.getElementById("imagePlay").src="images/mic3.png";
+		stopRecState();
+	}
+
+	let tempLang=languageObject.sourceLang;
+	let tempLangIcon=languageObject.sourceLangIcon;
+	languageObject.sourceLang=languageObject.destLang;
+	languageObject.destLang=tempLang;
+	languageObject.sourceLangIcon=languageObject.destLangIcon;
+	languageObject.destLangIcon=tempLangIcon;
+	console.log ('(client.js) Languages switched to ' + languageObject.sourceLang + " > " + languageObject.destLang);
+	
+	console.log ('(client.js) Sending setLanguages to backend: ' + languageObject.sourceLang + ', ' + languageObject.destLang);
+	socket.emit('setLanguage', languageObject);
+
+	document.getElementById("langInIcon").src=languageObject.sourceLangIcon;
+    document.getElementById("langOutIcon").src=languageObject.destLangIcon;
+	
+}
+
 //============ PLAY BUTTON (START) ============
 function playBtnClick () {
-	
-	// Show recording icon instead of play button
-	//document.getElementById("divPlay").style.display = "none";
-	document.getElementById("imagePlay").src="images/recording.gif";
-	// document.getElementById("divTermsOfUse").style.display = "none";
-	clearInput();
-	setRecState();
+	if (isRecording) {
+		document.getElementById("imagePlay").src="images/mic3.png";
+		stopRecState();
+	} else {
+		// Show recording icon instead of play button
+		//document.getElementById("divPlay").style.display = "none";
+		document.getElementById("imagePlay").src="images/recording.gif";
+		// document.getElementById("divTermsOfUse").style.display = "none";
+		clearInput();
+		setRecState();
+	}
 }
 
 function createMediaStream () {
@@ -319,6 +354,17 @@ function setRecState() {
 	createMediaStream();
 
 	showError ("Rec state");
+}
+
+function stopRecState() {
+	// Stop recording state, closeMediaStream
+	isRecording = false;
+
+	// This will create an audio context, an audio node chain and start the Google Cloud Stream
+	closeMediaStream();
+	socket.emit('endGoogleCloudStream', '');
+
+	showError ("Media stream closed");
 }
 
 //=============== CLEANUP AND END ================
