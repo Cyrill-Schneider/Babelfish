@@ -106,6 +106,8 @@ function showText (outputText, divElement, languageString) {
 		divElement.appendChild(iSpan);
 	}	
 	(languageString=="de") ? currentTextDE=outputText : currentTextFR=outputText;
+	// Console
+	console.log ('(client.js) Finisched phrases count: ' + finishedPhrasesCount);
 }
 
 function outputDE (newText) {
@@ -134,6 +136,7 @@ function saveFinishedPhrases () {
 	// Clear current phrase
 	currentTextDE="";
 	currentTextFR="";
+
 }
 
 function termsOfUse()
