@@ -81,7 +81,7 @@ function showText (outputText, divElement, languageString) {
 	let newWords = outputText.split(' ');
 
 	// Remove old text from element
-	divElement.innerHTML = finishedPhrases;
+	divElement.innerHTML = finishedPhrases + '---<BR>';
 	for (var i=0; i<newWords.length; i++) {
 		let iSpan = document.createElement('span');
 		iSpan.id = 'word-' + finishedPhraseCount + '-' + i;;
