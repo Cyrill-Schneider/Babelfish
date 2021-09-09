@@ -220,10 +220,10 @@ io.on('connection', client => {
 
 	client.on('setLanguage', data => {
 		// Received command to set the languages for this client.id
-		console.log (`(app.js) (${client.id}) Received command to set the source and target languages to ${data}`);
+		console.log (`(app.js) (${client.id}) Received command to set the source to ${data.sourceLang} and target languages to ${data.destLang}`);
 		stopRecognitionStream(client.id, false);
-		languageCode = 'de-DE'; 
-		targetLanguageCode = 'fr-FR'; 
+		languageCode = data.sourceLang; 
+		targetLanguageCode = data.destLang; 
     });
 
     client.on('binaryAudioData', data => {
