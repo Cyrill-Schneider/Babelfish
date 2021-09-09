@@ -221,7 +221,7 @@ io.on('connection', client => {
 	client.on('setLanguage', data => {
 		// Received command to set the languages for this client.id
 		console.log (`(app.js) (${client.id}) Received command to set the source to ${data.sourceLang} and target languages to ${data.destLang}`);
-		stopRecognitionStream(client.id, false);
+		// stopRecognitionStream(client.id, false);
 		languageCode = data.sourceLang; 
 		targetLanguageCode = data.destLang; 
     });

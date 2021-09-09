@@ -202,8 +202,8 @@ canvas {
 	top: 85%;
 	-webkit-transform: translate(-50%, -50%);
 	transform: translate(-50%, -50%);
-	width: 20%;
-	height: 10%;
+	width: 20%;  /* 20% */
+	height: 50%; /* 10% */
 	max-width:100%;
 	text-align: center;
 	display: none;
@@ -230,7 +230,7 @@ canvas {
 	z-index: 30000;
 	position: absolute;
 	left: 5%;
-	top: 15%;
+	top: 18%;
 	-webkit-transform: translate(-50%, -50%);
 	transform: translate(-50%, -50%);
 	width: 20%;
@@ -244,7 +244,7 @@ canvas {
 	z-index: 30000;
 	position: absolute;
 	left: 95%;
-	top: 15%;
+	top: 18%;
 	-webkit-transform: translate(-50%, -50%);
 	transform: translate(-50%, -50%);
 	width: 20%;
