@@ -73,7 +73,9 @@ var finishedPhrasesFR="";
 var finishedPhraseCount=0;
 var languageObject = {
 	sourceLang : "de-DE",
-	destLang : "fr-FR"
+	destLang : "fr-FR",
+	sourceLangIcon : "images/flagDE.png",
+	destLangIcon : "images/flagFR.png",
 }
 
 
@@ -197,9 +199,18 @@ socket.on('translationFR', translationJSON => {
 
 //============ LANGUAGE INPUT/OUTPUT SWITCH BUTTON ============
 function switchLanguage(){
+	if (isRecording) {
+		console.log ('(client.js) Stoping recording');
+		document.getElementById("imagePlay").src="images/mic3.png";
+		stopRecState();
+	}
+
 	let tempLang=languageObject.sourceLang;
+	let tempLangIcon=languageObject.sourceLangIcon;
 	languageObject.sourceLang=languageObject.destLang;
 	languageObject.destLang=tempLang;
+	languageObject.sourceLangIcon=languageObject.destLangIcon;
+	languageObject.destLangIcon=tempLangIcon;
 	console.log ('(client.js) Languages switched to ' + languageObject.sourceLang + " > " + languageObject.destLang);
 	
 	if (isRecording) { 
@@ -208,18 +219,25 @@ function switchLanguage(){
 	}
 	console.log ('(client.js) Sending setLanguages to backend: ' + languageObject.sourceLang + ', ' + languageObject.destLang);
 	socket.emit('setLanguage', languageObject);
-	console.log ('(client.js) Starting recording state');
-	setRecState()
+
+	document.getElementById("langInIcon").src=languageObject.sourceLangIcon;
+    document.getElementById("langOutIcon").src=languageObject.destLangIcon;
+	
 }
 
 //============ PLAY BUTTON (START) ============
 function playBtnClick () {
-	// Show recording icon instead of play button
-	//document.getElementById("divPlay").style.display = "none";
-	document.getElementById("imagePlay").src="images/recording.gif";
-	// document.getElementById("divTermsOfUse").style.display = "none";
-	clearInput();
-	setRecState();
+	if (isRecording) {
+		document.getElementById("imagePlay").src="images/mic3.png";
+		stopRecState();
+	} else {
+		// Show recording icon instead of play button
+		//document.getElementById("divPlay").style.display = "none";
+		document.getElementById("imagePlay").src="images/recording.gif";
+		// document.getElementById("divTermsOfUse").style.display = "none";
+		clearInput();
+		setRecState();
+	}
 }
 
 function createMediaStream () {
