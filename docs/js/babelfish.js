@@ -213,10 +213,6 @@ function switchLanguage(){
 	languageObject.destLangIcon=tempLangIcon;
 	console.log ('(client.js) Languages switched to ' + languageObject.sourceLang + " > " + languageObject.destLang);
 	
-	if (isRecording) { 
-		console.log ('(client.js) Stopping recording state');
-		stopRecState();
-	}
 	console.log ('(client.js) Sending setLanguages to backend: ' + languageObject.sourceLang + ', ' + languageObject.destLang);
 	socket.emit('setLanguage', languageObject);
 
