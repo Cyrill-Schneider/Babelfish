@@ -72,6 +72,11 @@ const fs = require('fs'),
 
 var httpServer, firebaseSubscriptionsUrl;
 
+// Languages Codes and default values
+var languageCode = 'de-DE'; //de-DE en-US fr-FR
+var targetLanguageCode = 'fr-FR'; //de-DE en-US
+var url;
+
 // Set environment according to APP_ENV from .env
 console.log ('(app.js) Version: ' + VERSION);
 console.log ('(app.js) *** ENV is ' + APPENV + ' ***');
@@ -213,6 +218,14 @@ io.on('connection', client => {
 		socketClients[client.id].sampleRateHertz=data;
     });
 
+	client.on('setLanguage', data => {
+		// Received command to set the languages for this client.id
+		console.log (`(app.js) (${client.id}) Received command to set the source to ${data.sourceLang} and target languages to ${data.destLang}`);
+		// stopRecognitionStream(client.id, false);
+		languageCode = data.sourceLang; 
+		targetLanguageCode = data.destLang; 
+    });
+
     client.on('binaryAudioData', data => {
 		// Received binary audio data for this client.id
 		if (socketClients[client.id].agent=="BABELFISH") {
@@ -253,19 +266,12 @@ var googleClients = {};
 // Create recognition result for Google speech to text (BABELFISH)
 var recognitionResult;
 
-var languageCode;
-var targetLanguageCode;
-var url;
-
 function startRecognitionStream(client, clientId, data) {
 
 	// Google settings for audio stream and speech-to-text
 
 	let encoding = 'AUDIO_ENCODING_LINEAR_16';
 	let sampleRateHertz = socketClients[clientId].sampleRateHertz;
-
-	languageCode = 'de-DE'; //de-DE en-US fr-FR
-	targetLanguageCode = 'fr-FR'; //de-DE en-US
 
 	// AudioConfig for DialogFlow: https://pub.dev/documentation/googleapis/latest/googleapis.dialogflow.v2/GoogleCloudDialogflowV2InputAudioConfig-class.html
 	// AudioConfig for Streaming recognition: https://cloud.google.com/speech-to-text/docs/reference/rpc/google.cloud.speech.v1?hl=ru#google.cloud.speech.v1.StreamingRecognitionConfig
