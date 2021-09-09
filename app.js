@@ -293,6 +293,7 @@ function startRecognitionStream(client, clientId, data) {
 		const config = {
 			encoding: encoding,
 			sampleRateHertz: sampleRateHertz,
+			// single_utterance : true,
 			alternativeLanguageCodes: ["fr-FR"], // FIXME: doesn't work right yet 
 			languageCode: languageCode // FIXME: should be configured above
 		};
@@ -356,12 +357,12 @@ function startRecognitionStream(client, clientId, data) {
 		
 				if (!recognitionResult.isFinal) {
 					// Intermediate response from Google streamingDetect
-					console.log(`(app.js) (${clientId}) Intermediate transcription (ST=${recognitionResult.stability}, CO=${recognitionResult.confidence}, END TIME=${recognitionResult.result_end_time}): ${recognitionResult.transcript}`);
+					// console.log(`(app.js) (${clientId}) Intermediate transcription (ST=${recognitionResult.stability}, CO=${recognitionResult.confidence}, END TIME=${recognitionResult.result_end_time}): ${recognitionResult.transcript}`);
 					// Send speech recognition data to this clientId via socket
 					io.to(clientId).emit('speechData', data);
 					// Save information that data was received for this clientId
 					googleClients[clientId].hasReceivedData=true;
-					console.log (`(app.js) (${clientId}) Target language is ${targetLanguageCode}`);
+					// console.log (`(app.js) (${clientId}) Target language is ${targetLanguageCode}`);
 					initiateTranslation(clientId, recognitionResult.transcript, recognitionResult.confidence, recognitionResult.isFinal);
 				} else {
 					// Final response from Google streamingDetect
@@ -447,7 +448,8 @@ function stopRecognitionStream(clientId, signalToClient) {
 var lastConfidenceScore=0.8;
 function initiateTranslation(clientId, sourceText, confidenceScore, isFinal) {
 
-	if (confidenceScore>lastConfidenceScore || isFinal)
+	// FIXME: no confidence score is available from speech-2-text, "true" overrides this to trigger continuous translations
+	if (true || confidenceScore>lastConfidenceScore || isFinal)
 	{
 		console.log (`(app.js) (${clientId}) Translation request for score ${confidenceScore} (isFinal=${isFinal}) and text "${sourceText}", last score is ${lastConfidenceScore}, target language is ${targetLanguageCode}`);
 	
@@ -456,11 +458,13 @@ function initiateTranslation(clientId, sourceText, confidenceScore, isFinal) {
 		if (isFinal) lastConfidenceScore=1;
 
 		let xhr = new XMLHttpRequest();
+		// Deepl parameter: source_lang=de&preserve_formatting=1&split_sentences=0&formality=less
+
 		if (targetLanguageCode=='de-DE'){
-			url = DEEPLRESTURL + '?auth_key=' + DEEPLACCESSKEY + '&text=' + sourceText + '&target_lang=DE';
+			url = DEEPLRESTURL + '?auth_key=' + DEEPLACCESSKEY + '&text=' + sourceText + '&source_lang=fr&target_lang=de&preserve_formatting=1&split_sentences=0&formality=less';
 		}
 		else if (targetLanguageCode=='fr-FR') {
-			url = DEEPLRESTURL + '?auth_key=' + DEEPLACCESSKEY + '&text=' + sourceText + '&target_lang=FR';
+			url = DEEPLRESTURL + '?auth_key=' + DEEPLACCESSKEY + '&text=' + sourceText + '&source_lang=de&target_lang=fr&preserve_formatting=1&split_sentences=0&formality=less';
 		}
 		else {
 			// When target language not found, use english
@@ -479,7 +483,7 @@ function initiateTranslation(clientId, sourceText, confidenceScore, isFinal) {
 
 			//Send the proper header information along with the request
 			xhr.setRequestHeader('Content-type', 'application/x-www-form-urlencoded');
-			console.log (`(app.js) (${clientId}) Sending translation request to ${url}:  ${JSON.stringify(params)}`);
+			// console.log (`(app.js) (${clientId}) Sending translation request to ${url}:  ${JSON.stringify(params)}`);
 
 			xhr.onreadystatechange = function() {//Call a function when the state changes.
 				if(xhr.readyState == 4 && xhr.status == 200) {
