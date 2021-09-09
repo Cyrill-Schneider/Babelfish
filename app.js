@@ -264,8 +264,8 @@ function startRecognitionStream(client, clientId, data) {
 	let encoding = 'AUDIO_ENCODING_LINEAR_16';
 	let sampleRateHertz = socketClients[clientId].sampleRateHertz;
 
-	languageCode = 'fr-FR'; //de-DE en-US
-	targetLanguageCode = 'de-DE'; //de-DE en-US
+	languageCode = 'de-DE'; //de-DE en-US fr-FR
+	targetLanguageCode = 'fr-FR'; //de-DE en-US
 
 	// AudioConfig for DialogFlow: https://pub.dev/documentation/googleapis/latest/googleapis.dialogflow.v2/GoogleCloudDialogflowV2InputAudioConfig-class.html
 	// AudioConfig for Streaming recognition: https://cloud.google.com/speech-to-text/docs/reference/rpc/google.cloud.speech.v1?hl=ru#google.cloud.speech.v1.StreamingRecognitionConfig
