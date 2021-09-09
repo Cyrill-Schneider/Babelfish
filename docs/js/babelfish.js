@@ -107,7 +107,7 @@ function showText (outputText, divElement, languageString) {
 	}	
 	(languageString=="de") ? currentTextDE=outputText : currentTextFR=outputText;
 	// Console
-	console.log ('(client.js) Finisched phrases count: ' + finishedPhrasesCount);
+	// console.log ('(client.js) Finisched phrases count: ' + finishedPhrasesCount);
 }
 
 function outputDE (newText) {
