@@ -253,13 +253,19 @@ var googleClients = {};
 // Create recognition result for Google speech to text (BABELFISH)
 var recognitionResult;
 
+var languageCode;
+var targetLanguageCode;
+var url;
+
 function startRecognitionStream(client, clientId, data) {
 
 	// Google settings for audio stream and speech-to-text
 
 	let encoding = 'AUDIO_ENCODING_LINEAR_16';
 	let sampleRateHertz = socketClients[clientId].sampleRateHertz;
-	let languageCode = 'de-DE'; //de-DE en-US
+
+	languageCode = 'fr-FR'; //de-DE en-US
+	targetLanguageCode = 'de-DE'; //de-DE en-US
 
 	// AudioConfig for DialogFlow: https://pub.dev/documentation/googleapis/latest/googleapis.dialogflow.v2/GoogleCloudDialogflowV2InputAudioConfig-class.html
 	// AudioConfig for Streaming recognition: https://cloud.google.com/speech-to-text/docs/reference/rpc/google.cloud.speech.v1?hl=ru#google.cloud.speech.v1.StreamingRecognitionConfig
@@ -349,6 +355,7 @@ function startRecognitionStream(client, clientId, data) {
 					io.to(clientId).emit('speechData', data);
 					// Save information that data was received for this clientId
 					googleClients[clientId].hasReceivedData=true;
+					console.log (`(app.js) (${clientId}) Target language is ${targetLanguageCode}`);
 					initiateTranslation(clientId, recognitionResult.transcript, recognitionResult.confidence, recognitionResult.isFinal);
 				} else {
 					// Final response from Google streamingDetect
@@ -358,6 +365,7 @@ function startRecognitionStream(client, clientId, data) {
 					googleClients[clientId].detectStream.end();
 					// Send speech recognition data to this clientId via socket
 					io.to(clientId).emit('speechData', data);
+					console.log (`(app.js) (${clientId}) Target language is ${targetLanguageCode}`);
 					initiateTranslation(clientId, recognitionResult.transcript, recognitionResult.confidence, recognitionResult.isFinal);
 				}
 			} else if (data.queryResult) {
@@ -432,16 +440,27 @@ function stopRecognitionStream(clientId, signalToClient) {
 // ==== DEEPL FUNCTIONS ====
 var lastConfidenceScore=0.8;
 function initiateTranslation(clientId, sourceText, confidenceScore, isFinal) {
+
 	if (confidenceScore>lastConfidenceScore || isFinal)
 	{
-		console.log (`(app.js) (${clientId}) Translation request for score ${confidenceScore} (isFinal=${isFinal}) and text "${sourceText}", last score is ${lastConfidenceScore}`);
+		console.log (`(app.js) (${clientId}) Translation request for score ${confidenceScore} (isFinal=${isFinal}) and text "${sourceText}", last score is ${lastConfidenceScore}, target language is ${targetLanguageCode}`);
 	
 		// Remember confidence score to avoid too many translation requests
 		lastConfidenceScore=confidenceScore;
 		if (isFinal) lastConfidenceScore=1;
-		
+
 		let xhr = new XMLHttpRequest();
-		let url = DEEPLRESTURL + '?auth_key=' + DEEPLACCESSKEY + '&text=' + sourceText + '&target_lang=FR';
+		if (targetLanguageCode=='de-DE'){
+			url = DEEPLRESTURL + '?auth_key=' + DEEPLACCESSKEY + '&text=' + sourceText + '&target_lang=DE';
+		}
+		else if (targetLanguageCode=='fr-FR') {
+			url = DEEPLRESTURL + '?auth_key=' + DEEPLACCESSKEY + '&text=' + sourceText + '&target_lang=FR';
+		}
+		else {
+			// When target language not found, use english
+			url = DEEPLRESTURL + '?auth_key=' + DEEPLACCESSKEY + '&text=' + sourceText + '&target_lang=EN';
+			console.log (`(app.js) (${clientId}) Language not defined`);
+		}
 		let params = {
 			auth_key: DEEPLACCESSKEY,
 			//source_lang:"DE",
@@ -467,7 +486,7 @@ function initiateTranslation(clientId, sourceText, confidenceScore, isFinal) {
 		} else {
 			let translationJSON = {
 				translations :  [{
-					detected_source_language : "DE",
+					detected_source_language : "FR",
 					text : sourceText
 				}]
 			}
