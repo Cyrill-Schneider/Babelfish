@@ -1,5 +1,7 @@
 'use strict'
 
+console.log ('Guten Morgen!');
+
 //================= CONFIG =================
 
 // Deployment configuration
