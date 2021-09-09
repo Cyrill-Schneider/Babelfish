@@ -17,16 +17,16 @@ const VERSION = process.env.VERSION;
 const PORT = process.env.PORT || 1337;
 const GOOGLESTREAMINITIALTIMEOUT = process.env.GOOGLE_STREAM_INITIAL_TIMEOUT; // Time to wait before we close the recognition stream
 const GOOGLESTREAMNODATATIMEOUT = process.env.GOOGLE_STREAM_NO_DATA_TIMEOUT; // Time to wait before we close a stream that has received data
-const GOOGLEPROJECTIDTHEO = process.env.GOOGLE_PROJECT_ID_THEO // Google project id for Theo
+/* const GOOGLEPROJECTIDTHEO = process.env.GOOGLE_PROJECT_ID_THEO // Google project id for Theo
 const JWTCLIENTEMAILTHEO = process.env.JWT_CLIENT_EMAIL_THEO;
 const JWTPRIVATEKEYTHEO = process.env.JWT_PRIVATE_KEY_THEO;
 const GOOGLEPROJECTIDHERMILIO = process.env.GOOGLE_PROJECT_ID_HERMILIO // Google project id for Hermilio
 const JWTCLIENTEMAILHERMILIO = process.env.JWT_CLIENT_EMAIL_HERMILIO;
-const JWTPRIVATEKEYHERMILIO = process.env.JWT_PRIVATE_KEY_HERMILIO;
+const JWTPRIVATEKEYHERMILIO = process.env.JWT_PRIVATE_KEY_HERMILIO; */
 const GOOGLEPROJECTIDBABELFISH = process.env.GOOGLE_PROJECT_ID_BABELFISH // Google project id for BABELFISH
 const JWTCLIENTEMAILBABELFISH = process.env.JWT_CLIENT_EMAIL_BABELFISH;
 const JWTPRIVATEKEYBABELFISH = process.env.JWT_PRIVATE_KEY_BABELFISH.replace(/\\n/g, '\n'); // https://stackoverflow.com/questions/50299329/node-js-firebase-service-account-private-key-wont-parse
-const GOOGLEMINRESULTCONFIDENCE = process.env.GOOGLE_MIN_RESULT_CONFIDENCE/100;
+// const GOOGLEMINRESULTCONFIDENCE = process.env.GOOGLE_MIN_RESULT_CONFIDENCE/100;
 const DEEPLRESTURL = process.env.DEEPL_REST_URL;
 const DEEPLACCESSKEY = process.env.DEEPL_ACCESS_KEY;
 const LOCALHOSTNAMELIST = process.env.LOCALHOST_HOSTNAMES.split(' ');
@@ -44,7 +44,6 @@ if (LOCALHOSTNAMELIST.includes(os.hostname())) {
 	// Current environment is Heroku staging or production (we do not distinguish between these two)
 	APPENV='PROD';
 }
-
 
 // Files to serve
 const INDEX = path.join(__dirname, '/nodeweb/index.html');
@@ -103,10 +102,6 @@ httpServer.on('error', err =>{
 	console.warn ('(app.js) SERVER ERRROR ' + err);
 });
 
-// ======= WEBPUSH =======
-// const webpush = require('web-push');
-// webpush.setVapidDetails('mailto:cyrill.schneider@app.ch', PUBLICVAPIDKEY, PRIVATEVAPIDKEY);
-
 // ======= EXPRESS SERVER =======
 // Body parser for POST requests
 app.use(bodyParser.urlencoded({ extended: true }));
@@ -160,99 +155,6 @@ app.get('/status', (req,res) => {
 	}
 	res.send(html);
 
-});
-
-// ======= PWA: SAVE SUBSCRIPTION =======
-
-app.post('/save-subscription', (req, res) => {
-	// The clients call this method to save their push subscription
-	let subscription = req.body,
-		endpoint = subscription.endpoint,
-		p256dh = subscription.keys.p256dh,
-		auth = subscription.keys.auth,
-		hash = sha256.hash(endpoint); // Generate SHA256 as key for Firebase node
-	
-	// Save subscription to Firebase
-	let result = saveSubscription (endpoint, p256dh, auth, hash);
-	if (result==='OK') {
-		res.status(200).send();
-	} else {
-		res.status(500).send(result);
-	}
-});
-
-// ======= PWA: PUSH NOTIFICATIONS =======
-
-app.get('/pushform', (req, res) => {
-	// Serve request for send push notification form
-	// FIXME: This should be protected to prevent abuse
-	console.log ('(app.js) GET ' + PUSHFORM);
-	res.sendFile(PUSHFORM);
-});
-
-app.post('/send-push', (req, res) => {
-	// Send push notification to each subscription in database
-	// Fetch subscriptions from Firebase database
-	let url = firebaseSubscriptionsUrl + '.json',
-		requestParameters = {
-		method:'GET',
-		headers: {'Content-Type':'application/json; charset=utf-8'}
-		//body:jsonData
-	}
-	console.log ('(app.js) Fetching subscriptions from Firebase');
-	fetch(url,requestParameters)
-	.then(res => res.json())
-	.then(subscriptions=> {
-		for (var key in subscriptions) {
-			// Send push notification to each subscription is database
-			// skip loop if the property is from prototype
-			if (!subscriptions.hasOwnProperty(key)) continue;
-
-			var obj = subscriptions[key];
-			// console.log('(app.js) Got subscription with key: ' + key);
-			let pushSubscription = {
-				endpoint: obj.endpoint,
-				keys: {
-				  auth: obj.auth,
-				  p256dh: obj.p256dh
-				}
-			  };
-			
-			// Create the push notification content
-			let pushSubscriptionContent = JSON.stringify({
-				title: req.body.push_title,
-				icon: req.body.push_icon,
-				badge: req.body.push_badge,
-				url: req.body.push_url,
-				image: req.body.push_image,
-				body: req.body.push_message
-			  });
-
-			//console.log ('(app.js) Push content: ' + pushSubscriptionContent);
-
-			// Send the push notification
-			webpush.sendNotification(
-				pushSubscription, 
-				pushSubscriptionContent
-			)
-			.then (() => {
-				console.log('(app.js) - Sent push message to (auth): ' + pushSubscription.keys.auth);
-			})
-			.catch (error =>{
-				console.log('(app.js) - Error sending push message to (auth): ' + pushSubscription.keys.auth);
-				
-				// Subscription no longer active, delete from database
-				deleteSubscription (pushSubscription.endpoint);
-			});
-		}
-	}).then( () => {
-		let pushResult='Test Pushnachricht an alle registrierten Benutzer versendet.';
-		res.status(200).send(pushResult);
-	})
-	.catch(err=> {
-		console.log('(app.js) GET error for push subscriptions: ' + err);
-		res.status(500).send(err);
-	})
 });
 
 // ======= SOCKET.IO FUNCTIONS / EVENTS =======
@@ -313,26 +215,7 @@ io.on('connection', client => {
 
     client.on('binaryAudioData', data => {
 		// Received binary audio data for this client.id
-		if (socketClients[client.id].agent=="THEO" || socketClients[client.id].agent=="HERMILIO") {
-			if (googleClients[client.id] && googleClients[client.id].detectStream !== null && !googleClients[client.id].detectStreamIsFinal) {
-				// DialogFlow stream available, forward audio data from client
-				googleClients[client.id].detectStream.write({ inputAudio: (data)});
-				// Check to see if this stream has not returned any data for a while
-				if (googleClients[client.id].hasReceivedData && googleClients[client.id].active) {
-					// Active stream that has received some data, check for timeout
-					if (secondsBetweenDates(Date.now(),googleClients[client.id].sessionsClientLastData)>GOOGLESTREAMNODATATIMEOUT) {
-						console.log (`(app.js) (${client.id}) No more data received from detectIntent for ${GOOGLESTREAMNODATATIMEOUT} seconds. Ending stream.`);
-						stopRecognitionStream(client.id, false);
-					}
-				} else {
-					if (secondsBetweenDates(Date.now(),googleClients[client.id].sessionsClientLastData)>GOOGLESTREAMINITIALTIMEOUT) {
-						console.log (`(app.js) (${client.id}) No data received from detectIntent for ${GOOGLESTREAMINITIALTIMEOUT} seconds. Are you there?`);
-						// No data received at all, shutting down and sending information to client 
-						stopRecognitionStream(client.id, true);
-					}
-				}
-			}
-		} else if (socketClients[client.id].agent=="BABELFISH") {
+		if (socketClients[client.id].agent=="BABELFISH") {
 			if (googleClients[client.id] && googleClients[client.id].detectStream !== null && !googleClients[client.id].detectStreamIsFinal) {
 				// Stream available, forward audio data from client
 				googleClients[client.id].detectStream.write(data);
@@ -356,61 +239,11 @@ io.on('connection', client => {
     });
 });
 
-
-// ======= FIREBASE DATABASE FUNCTIONS FOR SUBSCRIPTIONS =======
-
-function saveSubscription (endpoint, p256dh, auth, hash) {
-	// Save the subscription to Firebase
-	let now = new Date();
-	let jsonData = JSON.stringify({endpoint:endpoint, p256dh:p256dh, auth:auth, lasttimestampUTC:now}),
-	url = firebaseSubscriptionsUrl + '/' + hash + '.json',
-	requestParameters = {
-		method:'PUT',
-		headers: {'Content-Type':'application/json; charset=utf-8'},
-		body:jsonData
-	};
-	console.log ('(app.js) POST - Saving subscription with key: ' + hash + ' to ' + firebaseSubscriptionsUrl);
-	//console.log (requestParameters);
-
-	// Save subscription to firebase using REST PUT
-	fetch(url,requestParameters)
-	.then(res => res.json())
-	.then(json=> {
-	console.log('(app.js) PUT of subscription to database successful');
-	 return 'OK';
-	})
-	.catch(err=> {
-	console.log ('(app.js) PUT of subscription to database caused an error: ' + err);		
-	return err;
-	})
-	return 'OK';
-}
-
-function deleteSubscription (endpoint) {
-	// Delete the subscription for the given endpoint from Firebase
-	let hash = sha256.hash(endpoint); // Generate SHA256 hash as key for Firebase node
-			
-	let url = firebaseSubscriptionsUrl + '/' + hash + '.json',
-		requestParameters = {
-			method:'DELETE',
-			headers: {'Content-Type':'application/json; charset=utf-8'}
-		};
-	console.log ('(app.js) DELETE - Deleting subscription with key: ' + hash + ' @ ' + url);
-	//console.log (requestParameters);
-	
-	// Delete subscription from Firebase using REST DELETE
-	fetch(url,requestParameters)
-	.then(res => res.json())
-	.then(json=> console.log('(app.js) DELETE of subscription successful'))
-	.catch(err=>console.log('(app.js) DELETE of subscription caused an error: ' + err))
-}
-
 // ======= GOOGLE DIALOWFLOW WITH SPEECH-TO-TEXT =======
 
 // Imports the Dialogflow library
-const dialogflow = require('dialogflow');
+//const dialogflow = require('dialogflow');
 const googlespeech = require('@google-cloud/speech');
-
 
 // Instantiates a session client
 
@@ -431,59 +264,7 @@ function startRecognitionStream(client, clientId, data) {
 	// AudioConfig for DialogFlow: https://pub.dev/documentation/googleapis/latest/googleapis.dialogflow.v2/GoogleCloudDialogflowV2InputAudioConfig-class.html
 	// AudioConfig for Streaming recognition: https://cloud.google.com/speech-to-text/docs/reference/rpc/google.cloud.speech.v1?hl=ru#google.cloud.speech.v1.StreamingRecognitionConfig
 	let audioConfig;
-	if (socketClients[clientId].agent=="THEO") {
-		audioConfig	= {
-			"audioEncoding": encoding,
-			"sampleRateHertz": sampleRateHertz,
-			"languageCode": languageCode,
-			"singleUtterance" : false, // does this work?
-			// no longer available? "profanityFilter": true,
-			//enableWordTimeOffsets: true,
-			"phraseHints": [
-				'Accenture',
-				'APP',
-				'APP Unternehmensberatung',
-				'APP Unternehmensberatung AG',
-				'Apps',
-				'Assessment',
-				'AWK',
-				'BCG',
-				'case study',
-				'CEO',
-				'Chief Executive Officer',
-				'Consultant',
-				'Deloitte',
-				'Boston Consulting Group',
-				'Deloitte',
-				'ERNI Consulting',
-				'Ernst and Young',
-				'EY',
-				'IT',
-				'Junior',
-				'PWC',
-				'Senior',
-				'Theo',
-				'Website'
-			]
-			// interimResults no longer needs to be set
-			//interimResults: true,
-		}
-	} else if (socketClients[clientId].agent=="HERMILIO") {
-		audioConfig	= {
-			"audioEncoding": encoding,
-			"sampleRateHertz": sampleRateHertz,
-			"languageCode": languageCode,
-			"singleUtterance" : false, // does this work?
-			"phraseHints": [
-				'APP',
-				'APP Unternehmensberatung',
-				'APP Unternehmensberatung AG',
-				'Hermilio',
-				'HERMES',
-				'Website'
-			]
-		}
-	} else if (socketClients[clientId].agent=="BABELFISH") {
+	if (socketClients[clientId].agent=="BABELFISH") {
 		encoding="LINEAR16";
 		/*audioConfig	= {
 			config: {
@@ -520,19 +301,7 @@ function startRecognitionStream(client, clientId, data) {
 
 	// Set the google session credentials depending on the current agent
 	let projectId, credentials;
-	if (socketClients[clientId].agent=="THEO") {
-		projectId = GOOGLEPROJECTIDTHEO;
-		credentials = {
-			client_email: JWTCLIENTEMAILTHEO,
-			private_key: JWTPRIVATEKEYTHEO
-		};
-	} else if (socketClients[clientId].agent=="HERMILIO")	{
-		projectId = GOOGLEPROJECTIDHERMILIO;
-		credentials = {
-			client_email: JWTCLIENTEMAILHERMILIO,
-			private_key: JWTPRIVATEKEYHERMILIO
-		};
-	} else if (socketClients[clientId].agent=="BABELFISH")	{
+	if (socketClients[clientId].agent=="BABELFISH")	{
 		projectId = GOOGLEPROJECTIDBABELFISH;
 		credentials = {
 			client_email: JWTCLIENTEMAILBABELFISH,
@@ -543,13 +312,7 @@ function startRecognitionStream(client, clientId, data) {
 	}
 
 	// Create a Google SessionsClient for the current clientId
-	if (socketClients[clientId].agent=="THEO" || socketClients[clientId].agent=="HERMILIO") {
-		googleClients[clientId].sessionsClient = new dialogflow.SessionsClient({
-			projectId, 
-			credentials
-		});
-	googleClients[clientId].sessionPath = googleClients[clientId].sessionsClient.sessionPath(projectId, clientId);
-	} else if (socketClients[clientId].agent=="BABELFISH") {
+	if (socketClients[clientId].agent=="BABELFISH") {
 		console.log (`(app.js) (${clientId}) Creating Google SpeechClient: ${socketClients[clientId].agent}`)
 		googleClients[clientId].sessionsClient = new googlespeech.SpeechClient({
 			projectId, 
@@ -561,73 +324,7 @@ function startRecognitionStream(client, clientId, data) {
 	// Initialize isFinal as false, nothing has been detected yet
 	googleClients[clientId].detectStreamIsFinal = false;
 
-	if (socketClients[clientId].agent=="THEO" || socketClients[clientId].agent=="HERMILIO") {
-		// Create a new detect stream for the sessionsClient
-		googleClients[clientId].detectStream = googleClients[clientId].sessionsClient
-		.streamingDetectIntent()
-		.on('data', data => {
-			//console.log ('(app.js) interim message: ' + JSON.stringify(data));
-			// StreamingDetectIntentResponse: DialogFlow sends several messages back
-			// 1. If the input was set to streaming audio (=yes), the first one or more messages contain recognition_result. Each recognition_result represents a more complete transcript of what the user said. The last recognition_result has is_final set to true.
-			// 2. The next message contains response_id, query_result and optionally webhook_status if a WebHook was called (=no).
-			if (data.recognitionResult) {
-				// Update last data received information on this clientId
-				googleClients[clientId].sessionsClientLastData = Date.now();
-		
-				if (!data.recognitionResult.isFinal) {
-					// Intermediate response from Google streamingDetect
-					console.log(`(app.js) (${clientId}) Intermediate transcription (type=${data.recognitionResult.messageType}): ${data.recognitionResult.transcript}`);
-					// Send speech recognition data to this clientId via socket
-					io.to(clientId).emit('speechData', data);
-					// Save information that data was received for this clientId
-					googleClients[clientId].hasReceivedData=true;
-				} else {
-					// Final response from Google streamingDetect
-					console.log(`(app.js) (${clientId}) Final transcription (type=${data.recognitionResult.messageType}): ${data.recognitionResult.transcript}`);
-					googleClients[clientId].detectStreamIsFinal=true;
-					// End the detectStream for this clientId
-					googleClients[clientId].detectStream.end();
-					// Send speech recognition data to this clientId via socket
-					io.to(clientId).emit('speechData', data);
-				}
-			} else if (data.queryResult) {
-				// This response contains all relevant information such as detected intent and fulfillment text
-				console.log(`(app.js) (${clientId}) Final queryText: ${data.queryResult.queryText}`);
-				if (data.queryResult.intent) {console.log(`(app.js) (${clientId}) intentDisplayName: ${data.queryResult.intent.displayName}`)}
-				//console.log('(app.js) fulfillmentMessages: ' + JSON.stringify(data));
-				
-				// Check if there is any data to send
-				if (data.queryResult.fulfillmentMessages[0]) {
-					let fulfillmentText='';
-					// Loop through fulfillment messages from DialogFlow and add text lines to response
-					for (let index = 0; index < data.queryResult.fulfillmentMessages.length; ++index) {
-						if (data.queryResult.fulfillmentMessages[index].text) fulfillmentText += data.queryResult.fulfillmentMessages[index].text.text.toString() + "\n";
-					};
-					console.log(`(app.js) (${clientId}) fulfillmentMessages[].text: ${fulfillmentText}`);
-
-					// Send speech recognition data to this clientId via socket
-					console.log(`(app.js) (${clientId}) Sending final transcription to client`);
-					io.to(clientId).emit('speechData', data);
-				}
-			} else {
-				// We should never end up here
-				console.log (`(app.js) (${clientId}) unhandled .on(data) event: ${JSON.stringify(data)}`);
-			};
-		})
-		.on('error', err => {
-			// Client.id will be undefined if we are shutting down
-			if (typeof client.id !== 'undefined') {
-				console.log (`(app.js) (${client.id}) .on ERROR: ${err.code} > ${err}`);
-				if (err.code==11)
-				{
-					// Google error 11: audio timeout error, happens after approx 60s of streaming empty audio
-					console.log (`(app.js) (${client.id}) Error 11: GCP stream inactivity timeout`);
-					// Signal error to clientId via socket
-					io.to(clientId).emit('googleError', err);
-				}
-			}
-			});
-	} else if (socketClients[clientId].agent=="BABELFISH") {
+	if (socketClients[clientId].agent=="BABELFISH") {
 		// Google speech to text with DeepL translation for Babelfish
 		console.log (`(app.js) (${clientId}) audioConfig ${JSON.stringify(audioConfig)}`);
 		console.log (`(app.js) (${clientId}) Starting detectStream: ${socketClients[clientId].agent}`)
@@ -647,7 +344,7 @@ function startRecognitionStream(client, clientId, data) {
 		
 				if (!recognitionResult.isFinal) {
 					// Intermediate response from Google streamingDetect
-					// console.log(`(app.js) (${clientId}) Intermediate transcription (ST=${recognitionResult.stability}, CO=${recognitionResult.confidence}): ${recognitionResult.transcript}`);
+					console.log(`(app.js) (${clientId}) Intermediate transcription (ST=${recognitionResult.stability}, CO=${recognitionResult.confidence}, END TIME=${recognitionResult.result_end_time}): ${recognitionResult.transcript}`);
 					// Send speech recognition data to this clientId via socket
 					io.to(clientId).emit('speechData', data);
 					// Save information that data was received for this clientId
@@ -705,23 +402,6 @@ function startRecognitionStream(client, clientId, data) {
 
 	//console.log ('(app.js) audioConfig' + JSON.stringify(audioConfig));
 
-	if (socketClients[clientId].agent=="THEO" || socketClients[clientId].agent=="HERMILIO") {
-		// Set config in initial stream request
-		const initialStreamRequest = {
-			session: googleClients[clientId].sessionPath,
-			"queryParams": {
-				session: googleClients[clientId].sessionPath,
-			},
-			"queryInput": {
-				"audioConfig": audioConfig
-			}
-		};
-
-		console.log ('(app.js) initialStreamRequest: '  + JSON.stringify(initialStreamRequest));
-
-		// Write the initial stream request to config audio input for this clientId
-		googleClients[clientId].detectStream.write(initialStreamRequest);
-	}
 }
 
 function stopRecognitionStream(clientId, signalToClient) {
