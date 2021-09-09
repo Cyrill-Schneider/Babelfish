@@ -72,8 +72,8 @@ var finishedPhrasesDE="";
 var finishedPhrasesFR="";
 var finishedPhraseCount=0;
 var languageObject = {
-	sourceLang : "deDE",
-	destLang : "frFR"
+	sourceLang : "de-DE",
+	destLang : "fr-FR"
 }
 
 
