@@ -158,8 +158,12 @@ function outputFR (newText) {
 function saveFinishedPhrases () {
 	console.log ('(client.js) Saving finished phrases');
 	// Call output functions to make all words unchanged
+	document.getElementById('divDE').innerHTML+=currentTextDE;
+	document.getElementById('divFR').innerHTML+=currentTextFR;
+	/* 
 	showFinishedText (currentTextDE, document.getElementById('divDE'), 'de');
 	showFinishedText (currentTextFR, document.getElementById('divFR'), 'fr');
+	 */
 	clearNewInput();
 	// Increase phrase count
 	finishedPhraseCount++;
@@ -235,6 +239,7 @@ socket.on('speechData', data => {
 });
 
 socket.on('translationFR', translationJSON => {
+	//console.log (JSON.parse(translationJSON));
 	outputFR (JSON.parse(translationJSON));
 });
 
