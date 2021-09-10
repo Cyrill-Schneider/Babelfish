@@ -349,18 +349,18 @@ function startRecognitionStream(client, clientId, data) {
 					// Save information that data was received for this clientId
 					googleClients[clientId].hasReceivedData=true;
 					// console.log (`(app.js) (${clientId}) Target language is ${targetLanguageCode}`);
-					initiateTranslation(clientId, recognitionResult.transcript, recognitionResult.confidence, recognitionResult.isFinal);
+					initiateTranslation(clientId, recognitionResult.transcript, recognitionResult.confidence, data.results[0].isFinal);
 				} else {
 					console.log ('data.results[0].isFinal=' + data.results[0].isFinal); //FIXME: Hier bleiben wir hängen seit isFinal wieder erkannt wird
 					// Final response from Google streamingDetect
 					//console.log(`(app.js) (${clientId}) Final transcription (ST=${recognitionResult.stability}, CO=${recognitionResult.confidence}): ${recognitionResult.transcript}`);
 					googleClients[clientId].detectStreamIsFinal=true;
 					// End the detectStream for this clientId
-					googleClients[clientId].detectStream.end();
+					if (googleClients[clientId]) googleClients[clientId].detectStream.end();
 					// Send speech recognition data to this clientId via socket
 					io.to(clientId).emit('speechData', data);
 					//console.log (`(app.js) (${clientId}) Target language is ${targetLanguageCode}`);
-					initiateTranslation(clientId, recognitionResult.transcript, recognitionResult.confidence, recognitionResult.isFinal);
+					initiateTranslation(clientId, recognitionResult.transcript, recognitionResult.confidence, data.results[0].isFinal);
 				}
 			} else if (data.queryResult) {
 				// This response contains all relevant information such as detected intent and fulfillment text
