@@ -58,18 +58,12 @@ const criticalErrorMsg="Oops! Die App kann leider nicht auf dein Mikrofon zugrei
 var mediaStream, input, processor;
 
 // Terms of use
-const touText='Die Nutzung unseres Übersetzungsdienstes erfordert keine Eingabe personenbezogener Daten. Der Betrieb des Übersetzungsdienstes erfolgt durch ein Partnerunternehmen. Zur Optimierung der Funktionalitäten des Übersetzungsdienstes werden die geführten Konversationen in Textform anonymisiert aufgezeichnet und können von autorisierten Personen der APP Unternehmensberatung AG eingesehen werden. Audiodaten aus der Spracherkennung werden nicht aufgezeichnet. Detaillierte Informationen zu den datenschutzrechtlichen Aspekten finden Sie in der Datenschutzerklärung auf der Homepage der APP Unternehmensberatung AG.';
-
+const touText='Die Ausgabe ist nicht schlecht, du sprichst nur zu undeutlich :-)';
+// Nutzungsbedingungen: Die Nutzung unseres Übersetzungsdienstes erfordert keine Eingabe personenbezogener Daten. Der Betrieb des Übersetzungsdienstes erfolgt durch ein Partnerunternehmen. Zur Optimierung der Funktionalitäten des Übersetzungsdienstes werden die geführten Konversationen in Textform anonymisiert aufgezeichnet und können von autorisierten Personen der APP Unternehmensberatung AG eingesehen werden. Audiodaten aus der Spracherkennung werden nicht aufgezeichnet. Detaillierte Informationen zu den datenschutzrechtlichen Aspekten finden Sie in der Datenschutzerklärung auf der Homepage der APP Unternehmensberatung AG.'//
 //================== SCREEN ==================
 function clearInput() {
 	// Clear input div
 	document.getElementById('divDE').innerHTML = '';
-}
-
-function clearNewInput() {
-	// Clear input div
-	document.getElementById('divNewDE').innerHTML = '';
-	document.getElementById('divNewFR').innerHTML = '';
 }
 
 var currentTextDE="";
@@ -94,8 +88,7 @@ function showText (outputText, divElement, languageString) {
 	let newWords = outputText.split(' ');
 
 	// Remove old text from element
-	// divElement.innerHTML = finishedPhrases + '---<BR>';
-	divElement.innerHTML = finishedPhrases;
+	divElement.innerHTML = finishedPhrases + '---<BR>';
 	for (var i=0; i<newWords.length; i++) {
 		let iSpan = document.createElement('span');
 		iSpan.id = 'word-' + finishedPhraseCount + '-' + i;;
@@ -111,20 +104,18 @@ function showText (outputText, divElement, languageString) {
 		}
 		// Append this span/word
 		divElement.appendChild(iSpan);
-	}	
+	}
 	(languageString=="de") ? currentTextDE=outputText : currentTextFR=outputText;
-	// Console
-	// console.log ('(client.js) Finisched phrases count: ' + finishedPhrasesCount);
 }
 
 function outputDE (newText) {
 	console.log ("(client.js) DE: " + newText);
-	showText (newText, document.getElementById('divNewDE'), 'de');
+	showText (newText, document.getElementById('divDE'), 'de');
 }
 
 function outputFR (newText) {
 	console.log ("(client.js) FR: " +newText.translations[0].text);
-	showText (newText.translations[0].text, document.getElementById('divNewFR'), 'fr');
+	showText (newText.translations[0].text, document.getElementById('divFR'), 'fr');
 }
 
 function saveFinishedPhrases () {
@@ -141,11 +132,8 @@ function saveFinishedPhrases () {
 	finishedPhrasesDE = document.getElementById('divDE').innerHTML;
 	finishedPhrasesFR = document.getElementById('divFR').innerHTML;
 	// Clear current phrase
-	console.log ('(client.js) Deleting current textes');
 	currentTextDE="";
 	currentTextFR="";
-    // Clear new inputs
-	clearNewInput();
 }
 
 function termsOfUse()
@@ -351,7 +339,7 @@ var handleMediaStream = function (stream) {
 
 function pageLoaded(){
 	document.getElementById("divPlay").style.display = "block";
-	document.getElementById('divTermsOfUse').innerHTML = "Nutzungsbedingungen";
+	document.getElementById('divTermsOfUse').innerHTML = "Hä? Hilfe!";
 	document.getElementById("divTermsOfUse").style.display = "block";
 };
 
