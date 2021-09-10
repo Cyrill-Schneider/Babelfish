@@ -183,7 +183,7 @@ socket.on('googleError', err => {
 socket.on('speechData', data => {
 	let recognitionResult = data.results[0].alternatives[0];
 	if (!recognitionResult.isFinal) {
-		// Got interim data from Google DialogFlow Streaming Recognition
+		// Got interim data from Google Speech-2-text Streaming Recognition
 		let interimString = recognitionResult.transcript.replace(/\u00df/g, "ss"); // replace "ß" > "ss"
 		outputDE (interimString);
 	} else {
