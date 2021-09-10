@@ -17,6 +17,7 @@ const VERSION = process.env.VERSION;
 const PORT = process.env.PORT || 1337;
 const GOOGLESTREAMINITIALTIMEOUT = process.env.GOOGLE_STREAM_INITIAL_TIMEOUT; // Time to wait before we close the recognition stream
 const GOOGLESTREAMNODATATIMEOUT = process.env.GOOGLE_STREAM_NO_DATA_TIMEOUT; // Time to wait before we close a stream that has received data
+const MINIMUMTIMEBETWEENTRANSLATIONREQUESTS = process.env.MINIMUM_TIME_BETWEEN_TRANSLATION_REQUESTS_IN_MS || 1500; // Minimum time to wait before we send another translation request to DeepL
 /* const GOOGLEPROJECTIDTHEO = process.env.GOOGLE_PROJECT_ID_THEO // Google project id for Theo
 const JWTCLIENTEMAILTHEO = process.env.JWT_CLIENT_EMAIL_THEO;
 const JWTPRIVATEKEYTHEO = process.env.JWT_PRIVATE_KEY_THEO;
@@ -278,33 +279,17 @@ function startRecognitionStream(client, clientId, data) {
 	let audioConfig;
 	if (socketClients[clientId].agent=="BABELFISH") {
 		encoding="LINEAR16";
-		/*audioConfig	= {
-			config: {
-				encoding: encoding,
-				sample_rate_hertz: sampleRateHertz,
-				language_code: languageCode,
-				profanity_filter: false,
-				enable_automatic_punctuation: true
-			},
-			single_utterance : false, 
-			interim_results: true			
-		}
-		*/
-		const config = {
-			encoding: encoding,
-			sampleRateHertz: sampleRateHertz,
-			// single_utterance : true,
-			alternativeLanguageCodes: ["fr-FR"], // FIXME: doesn't work right yet 
-			languageCode: languageCode // FIXME: should be configured above
-		};
-		
-		audioConfig = {
-			config,
-			interimResults: true
-		};
-		console.log (JSON.stringify(audioConfig));
-	};
 
+		audioConfig = {
+			config : {
+				encoding: encoding,
+				sampleRateHertz: sampleRateHertz,
+				languageCode: languageCode, 
+			  },
+			  singleUtterance: false,
+			  interimResults: true
+		};
+	};
 	
 	if (!googleClients[clientId]) {googleClients[clientId] = {sessionsClient : ''}};
 	// Save creation time of this sessionsClient
@@ -445,17 +430,18 @@ function stopRecognitionStream(clientId, signalToClient) {
 }
 
 // ==== DEEPL FUNCTIONS ====
-var lastConfidenceScore=0.8;
-function initiateTranslation(clientId, sourceText, confidenceScore, isFinal) {
+var lastTranslationTime=0;
 
-	// FIXME: no confidence score is available from speech-2-text, "true" overrides this to trigger continuous translations
-	if (true || confidenceScore>lastConfidenceScore || isFinal)
+function initiateTranslation(clientId, sourceText, confidenceScore, isFinal) {
+	let elapsedTimeSinceLastTranslation = millisecondsBetweenDates(Date.now(),lastTranslationTime);
+
+	if (elapsedTimeSinceLastTranslation>MINIMUMTIMEBETWEENTRANSLATIONREQUESTS || isFinal)
 	{
-		console.log (`(app.js) (${clientId}) Translation request for score ${confidenceScore} (isFinal=${isFinal}) and text "${sourceText}", last score is ${lastConfidenceScore}, target language is ${targetLanguageCode}`);
+		//console.log (`(app.js) (${clientId}) Translation request: ${sourceText} (elapsed time in s = ${elapsedTimeSinceLastTranslation}, score = ${confidenceScore}, isFinal=${isFinal}, target language is ${targetLanguageCode}`);
+		console.log (`(app.js) (${clientId}) Translation request: ${sourceText} @ms=${elapsedTimeSinceLastTranslation}`);
 	
-		// Remember confidence score to avoid too many translation requests
-		lastConfidenceScore=confidenceScore;
-		if (isFinal) lastConfidenceScore=1;
+		// Update time of last translation
+		lastTranslationTime=Date.now();
 
 		let xhr = new XMLHttpRequest();
 		// Deepl parameter: source_lang=de&preserve_formatting=1&split_sentences=0&formality=less
@@ -487,9 +473,8 @@ function initiateTranslation(clientId, sourceText, confidenceScore, isFinal) {
 
 			xhr.onreadystatechange = function() {//Call a function when the state changes.
 				if(xhr.readyState == 4 && xhr.status == 200) {
-					console.log(`(app.js) (${clientId}) Translation = "${xhr.responseText}"`);
+					console.log(`(app.js) (${clientId}) Translation response: "${JSON.parse(xhr.responseText).translations[0].text}"`);
 					io.to(clientId).emit('translationFR', xhr.responseText);
-					lastConfidenceScore=0.8;
 				}
 			}
 			xhr.send(JSON.stringify(params));
@@ -500,7 +485,7 @@ function initiateTranslation(clientId, sourceText, confidenceScore, isFinal) {
 					text : sourceText
 				}]
 			}
-			console.log (`(app.js) (${clientId}) Config: translations disabled (FAKE_TRANSLATION=true) - sending source text: ${sourceText}`);
+			//console.log (`(app.js) (${clientId}) Config: translations disabled (FAKE_TRANSLATION=true) - sending source text: ${sourceText}`);
 			io.to(clientId).emit('translationFR', JSON.stringify(translationJSON));
 		}
 	}
@@ -541,4 +526,8 @@ function garbageCollection () {
 // ==== GENERIC FUNCTIONS ====
 function secondsBetweenDates (newDate, oldDate) {
 	return Math.floor((newDate-oldDate) / 1000);
+}
+
+function millisecondsBetweenDates (newDate, oldDate) {
+	return Math.floor((newDate-oldDate));
 }
