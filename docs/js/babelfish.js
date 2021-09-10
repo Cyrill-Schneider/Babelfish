@@ -157,7 +157,8 @@ function outputFR (newText) {
 
 function saveFinishedPhrases () {
 	console.log ('(client.js) Saving finished phrases');
-	// Call output functions to make all words unchanged
+	// Add current text in both languages to divs below (minutes)
+	// FIXME: due to async requests, this will add incomplete sentences. Should really wait for final results from Google speech-to-text and DeepL translation
 	document.getElementById('divDE').innerHTML+=currentTextDE;
 	document.getElementById('divFR').innerHTML+=currentTextFR;
 	/* 
