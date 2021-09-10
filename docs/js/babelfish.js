@@ -66,6 +66,12 @@ function clearInput() {
 	document.getElementById('divDE').innerHTML = '';
 }
 
+function clearNewInput() {
+	// Clear input div
+	document.getElementById('divNewDE').innerHTML = '';
+	document.getElementById('divNewFR').innerHTML = '';
+}
+
 var currentTextDE="";
 var currentTextFR="";
 var finishedPhrasesDE="";
@@ -81,6 +87,36 @@ var languageObject = {
 
 function showText (outputText, divElement, languageString) {
 	let oldWords = (languageString=="de") ? currentTextDE.split(' ') : currentTextFR.split(' ');
+	// let finishedPhrases = (languageString=="de") ? finishedPhrasesDE : finishedPhrasesFR;
+
+	// Always capitalize first letter of first string
+	outputText = outputText.charAt(0).toUpperCase() + outputText.slice(1);
+	let newWords = outputText.split(' ');
+	let newPhraseCount = 0;
+
+	// Remove old text from element
+	divElement.innerHTML =' ';
+	for (var i=0; i<newWords.length; i++) {
+		let iSpan = document.createElement('span');
+		iSpan.id = 'word-' + newPhraseCount + '-' + i;;
+		iSpan.innerHTML = newWords[i] + '&nbsp;';
+		if (oldWords[i]===newWords[i]) {
+			// Word was there before
+			// Create new unchanged span/word 
+			iSpan.className = languageString + '-word-unchanged';
+		} else {
+			// Word is new or has changed
+			// Create new span/word 
+			iSpan.className = languageString + '-word-new';
+		}
+		// Append this span/word
+		divElement.appendChild(iSpan);
+	}
+	(languageString=="de") ? currentTextDE=outputText : currentTextFR=outputText;
+}
+
+function showFinishedText (outputText, divElement, languageString) {
+	let oldWords = (languageString=="de") ? currentTextDE.split(' ') : currentTextFR.split(' ');
 	let finishedPhrases = (languageString=="de") ? finishedPhrasesDE : finishedPhrasesFR;
 
 	// Always capitalize first letter of first string
@@ -88,7 +124,8 @@ function showText (outputText, divElement, languageString) {
 	let newWords = outputText.split(' ');
 
 	// Remove old text from element
-	divElement.innerHTML = finishedPhrases + '---<BR>';
+	// divElement.innerHTML = finishedPhrases + '---<BR>';
+	divElement.innerHTML = finishedPhrases;
 	for (var i=0; i<newWords.length; i++) {
 		let iSpan = document.createElement('span');
 		iSpan.id = 'word-' + finishedPhraseCount + '-' + i;;
@@ -109,20 +146,21 @@ function showText (outputText, divElement, languageString) {
 }
 
 function outputDE (newText) {
-	console.log ("(client.js) DE: " + newText);
-	showText (newText, document.getElementById('divDE'), 'de');
+	console.log ("(client.js) NEW TEXT DE: " + newText);
+	showText (newText, document.getElementById('divNewDE'), 'de');
 }
 
 function outputFR (newText) {
-	console.log ("(client.js) FR: " +newText.translations[0].text);
-	showText (newText.translations[0].text, document.getElementById('divFR'), 'fr');
+	console.log ("(client.js) NEW TEXT FR: " +newText.translations[0].text);
+	showText (newText.translations[0].text, document.getElementById('divNewFR'), 'fr');
 }
 
 function saveFinishedPhrases () {
 	console.log ('(client.js) Saving finished phrases');
 	// Call output functions to make all words unchanged
-	showText (currentTextDE, document.getElementById('divDE'), 'de');
-	showText (currentTextFR, document.getElementById('divFR'), 'fr');
+	showFinishedText (currentTextDE, document.getElementById('divDE'), 'de');
+	showFinishedText (currentTextFR, document.getElementById('divFR'), 'fr');
+	clearNewInput();
 	// Increase phrase count
 	finishedPhraseCount++;
 	// Add line break to outputs
@@ -138,7 +176,7 @@ function saveFinishedPhrases () {
 
 function termsOfUse()
 {
-	showText(touText, document.getElementById("divDE"), 'de');
+	showText(touText, document.getElementById("divNewDE"), 'de');
 	document.getElementById("divTermsOfUse").style.display = "none";
 }
 
@@ -189,7 +227,8 @@ socket.on('speechData', data => {
 	} else {
 		// Got final data from Google DialogFlow Streaming Recognition
 		let finalString = recognitionResult.transcript.replace(/\u00df/g, "ss"); // replace "ß" > "ss"
-		outputDE ("Final: " + finalString);
+		// outputDE ("Final: " + finalString);
+		saveFinishedPhrases();
 	}
 });
 
@@ -231,7 +270,7 @@ function playBtnClick () {
 		//document.getElementById("divPlay").style.display = "none";
 		document.getElementById("imagePlay").src="images/recording.gif";
 		// document.getElementById("divTermsOfUse").style.display = "none";
-		clearInput();
+		clearNewInput();
 		setRecState();
 	}
 }
