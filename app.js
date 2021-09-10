@@ -356,7 +356,7 @@ function startRecognitionStream(client, clientId, data) {
 					//console.log(`(app.js) (${clientId}) Final transcription (ST=${recognitionResult.stability}, CO=${recognitionResult.confidence}): ${recognitionResult.transcript}`);
 					googleClients[clientId].detectStreamIsFinal=true;
 					// End the detectStream for this clientId
-					// googleClients[clientId].detectStream.end();
+					if (googleClients[clientId]) googleClients[clientId].detectStream.end();
 					// Send speech recognition data to this clientId via socket
 					io.to(clientId).emit('speechData', data);
 					//console.log (`(app.js) (${clientId}) Target language is ${targetLanguageCode}`);
