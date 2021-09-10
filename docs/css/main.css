@@ -73,16 +73,39 @@ canvas {
 	border-width: 1px;
 	position: absolute;
 	padding: 0.5%;
-	top: 20%;
+	top: 30%;
 	left: 1%;
 	margin:0 3%;
 	width: 44%;
 	overflow-y: auto;
 	box-sizing: border-box;
-	min-height: 50vh;
-	max-height: 60vh;
+	min-height: 40vh;
+	max-height: 50vh;
 	text-align: left;
 
+}
+
+.new-de-text {
+	/* -moz-border-radius:10px;  /* for Firefox */
+	/* -webkit-border-radius:10px; /* for Webkit-Browsers */
+	border-radius:10px; /* regular */
+	/* background: gray; /* older browsers */
+	background-color: rgba(255, 255, 255, 0.6); /* newer browsers */
+	/* border: solid 10px #000; /* older browsers */
+	z-index: 10000;
+	border-style: solid;
+	border-color: rgba(96,190,176,1);
+	border-width: 1px;
+	position: absolute;
+	padding: 0.5%;
+	top: 20%;
+	left: 1%;
+	margin:0 3%;
+	width: 44%;
+	box-sizing: border-box;
+	min-height: 8vh;
+	max-height: 8vh;
+	text-align: left;
 }
 
 .de-word-new {
@@ -103,6 +126,28 @@ canvas {
 	background-color: rgba(255, 255, 255, 0.6); /* newer browsers */
 	z-index: 10000;
 	border-style: solid;
+	border-color: rgba(84,176,204,1);
+	border-width: 1px;
+	position: absolute;
+	padding: 0.5%;
+	top: 30%;
+	right: 1%;
+	margin:0 3%;
+	width: 44%;
+	overflow-y: auto;
+	box-sizing: border-box;
+	min-height: 40vh;
+	max-height: 50vh;
+	text-align: left;
+} 
+
+.new-fr-text {
+	/* -moz-border-radius:10px;  /* for Firefox */
+	/* -webkit-border-radius:10px; /* for Webkit-Browsers */
+	border-radius:10px; /* regular */
+	background-color: rgba(255, 255, 255, 0.6); /* newer browsers */
+	z-index: 10000;
+	border-style: solid;
 	border-color: rgba(96,190,176,1);
 	border-width: 1px;
 	position: absolute;
@@ -111,10 +156,9 @@ canvas {
 	right: 1%;
 	margin:0 3%;
 	width: 44%;
-	overflow-y: auto;
 	box-sizing: border-box;
-	min-height: 50vh;
-	max-height: 60vh;
+	min-height: 8vh;
+	max-height: 8vh;
 	text-align: left;
 } 
 
@@ -232,11 +276,11 @@ canvas {
 	z-index: 30000;
 	position: absolute;
 	left: 5%;
-	top: 18%;
+	top: 17%;
 	-webkit-transform: translate(-50%, -50%);
 	transform: translate(-50%, -50%);
-	width: 20%;
-	height: 10%;
+	width: 15%;
+	height: 8%;
 	max-width:100%;
 	text-align: center;
 }
@@ -246,11 +290,11 @@ canvas {
 	z-index: 30000;
 	position: absolute;
 	left: 95%;
-	top: 18%;
+	top: 17%;
 	-webkit-transform: translate(-50%, -50%);
 	transform: translate(-50%, -50%);
-	width: 20%;
-	height: 10%;
+	width: 15%;
+	height: 8%;
 	max-width:100%;
 	text-align: center;
 }

@@ -66,6 +66,12 @@ function clearInput() {
 	document.getElementById('divDE').innerHTML = '';
 }
 
+function clearNewInput() {
+	// Clear input div
+	document.getElementById('divNewDE').innerHTML = '';
+	document.getElementById('divNewFR').innerHTML = '';
+}
+
 var currentTextDE="";
 var currentTextFR="";
 var finishedPhrasesDE="";
@@ -88,7 +94,8 @@ function showText (outputText, divElement, languageString) {
 	let newWords = outputText.split(' ');
 
 	// Remove old text from element
-	divElement.innerHTML = finishedPhrases + '---<BR>';
+	// divElement.innerHTML = finishedPhrases + '---<BR>';
+	divElement.innerHTML = finishedPhrases;
 	for (var i=0; i<newWords.length; i++) {
 		let iSpan = document.createElement('span');
 		iSpan.id = 'word-' + finishedPhraseCount + '-' + i;;
@@ -112,12 +119,12 @@ function showText (outputText, divElement, languageString) {
 
 function outputDE (newText) {
 	console.log ("(client.js) DE: " + newText);
-	showText (newText, document.getElementById('divDE'), 'de');
+	showText (newText, document.getElementById('divNewDE'), 'de');
 }
 
 function outputFR (newText) {
 	console.log ("(client.js) FR: " +newText.translations[0].text);
-	showText (newText.translations[0].text, document.getElementById('divFR'), 'fr');
+	showText (newText.translations[0].text, document.getElementById('divNewFR'), 'fr');
 }
 
 function saveFinishedPhrases () {
@@ -134,9 +141,11 @@ function saveFinishedPhrases () {
 	finishedPhrasesDE = document.getElementById('divDE').innerHTML;
 	finishedPhrasesFR = document.getElementById('divFR').innerHTML;
 	// Clear current phrase
+	console.log ('(client.js) Deleting current textes');
 	currentTextDE="";
 	currentTextFR="";
-
+    // Clear new inputs
+	clearNewInput();
 }
 
 function termsOfUse()
